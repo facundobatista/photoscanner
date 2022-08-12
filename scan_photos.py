@@ -26,7 +26,7 @@ def extract_images(imagepath_prefix):
 
     cnts, _ = cv2.findContours(close, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    threshold_area = 500_000
+    threshold_area = 2_000_000
     image_idx = 1
     for c in cnts:
         area = cv2.contourArea(c)
@@ -35,7 +35,11 @@ def extract_images(imagepath_prefix):
             x, y, w, h = cv2.boundingRect(c)
             ROI = image[y:y + h, x:x + w]
             imagepath = imagepath_prefix + f"{image_idx}.jpeg"
-            print(f"    saving image {imagepath} ({w}x{h})")
+            if w > h:
+                relation = w / h
+            else:
+                relation = h / w
+            print(f"    saving image {imagepath} ({w}x{h} - {relation})")
             cv2.imwrite(imagepath, ROI)
             image_idx += 1
 
@@ -43,9 +47,10 @@ def extract_images(imagepath_prefix):
 def scan():
     cmd = [
         "scanimage",
-        "--source", "Flatbed",
-        "--mode", "Color",
-        "--resolution", "300",
+        "-d", "smfp:net;192.168.100.137",
+        "--doc-source", "Flatbed",
+        "--mode", "Color - 16 Million Colors",
+        "--resolution", "600",
         "--format=pnm",
         "--output-file", TMP_SCAN,
     ]
